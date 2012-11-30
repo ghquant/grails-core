@@ -19,8 +19,6 @@ package grails.build.logging;
 import jline.ConsoleReader;
 import jline.History;
 import jline.Terminal;
-import jline.UnsupportedTerminal;
-import jline.WindowsTerminal;
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
@@ -35,7 +33,6 @@ import org.fusesource.jansi.AnsiConsole;
 import org.springframework.util.StringUtils;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.Stack;
 
 import static org.fusesource.jansi.Ansi.Color.*;
@@ -175,26 +172,15 @@ public class GrailsConsole {
      * is controlled by the jline.terminal system property.
      */
     protected Terminal createTerminal() {
-        @SuppressWarnings("hiding") Terminal terminal;
         if (isWindows()) {
-            terminal = new WindowsTerminal() {
-                @Override
-                public boolean isANSISupported() {
-                    return true;
-                }
-            };
             try {
-                terminal.initializeTerminal();
-                terminal.enableEcho();
-                fixCtrlC();
-            } catch (Exception e) {
-                terminal = new UnsupportedTerminal();
+                return PatchedJLineWindowsTerminal.setupTerminal(reader);
+            }
+            catch (Exception ex) {
+                error(ex);
             }
         }
-        else {
-            terminal = Terminal.setupTerminal();
-        }
-        return terminal;
+        return Terminal.setupTerminal();
     }
 
     /**
@@ -214,25 +200,6 @@ public class GrailsConsole {
      */
     protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
         return AnsiConsole.wrapOutputStream(out);
-    }
-
-    // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
-    private void fixCtrlC() {
-        if (reader == null) {
-            return;
-        }
-
-        try {
-            Field f = ConsoleReader.class.getDeclaredField("keybindings");
-            f.setAccessible(true);
-            short[] keybindings = (short[])f.get(reader);
-            if (keybindings[3] == -48) {
-                keybindings[3] = 3;
-            }
-        }
-        catch (Exception ignored) {
-            // shouldn't happen
-        }
     }
 
     private boolean isWindows() {

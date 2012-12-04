@@ -74,6 +74,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  */
 public class GrailsScriptRunner {
 
+    private static final String loadingGrailsVersionFormat = "Loading Grails %s *SPECIAL EDITION*";
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
 
     private static InputStream originalIn;
@@ -211,7 +212,7 @@ public class GrailsScriptRunner {
         }
         if (script.name == null) {
             String version = System.getProperty("grails.version");
-            console.updateStatus("Loading Grails " + (version == null ? build.getGrailsVersion() : version));
+            console.updateStatus(String.format(loadingGrailsVersionFormat, (version == null ? build.getGrailsVersion() : version)));
 
             build.loadConfig();
             if (resolveDeps) {
@@ -346,7 +347,7 @@ public class GrailsScriptRunner {
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
 
-            console.updateStatus("Loading Grails " + settings.getGrailsVersion());
+            console.updateStatus(String.format(loadingGrailsVersionFormat, settings.getGrailsVersion()));
             settings.loadConfig();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode",

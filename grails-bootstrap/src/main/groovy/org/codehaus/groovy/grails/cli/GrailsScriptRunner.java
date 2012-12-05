@@ -211,7 +211,7 @@ public class GrailsScriptRunner {
         }
         if (script.name == null) {
             String version = System.getProperty("grails.version");
-            console.updateStatus("Loading Grails " + (version == null ? build.getGrailsVersion() : version));
+            console.updateStatus("Loading Grails " + (version == null ? build.getGrailsVersion() : version) + " *SPECIAL EDITION*");
 
             build.loadConfig();
             if (resolveDeps) {
@@ -346,7 +346,7 @@ public class GrailsScriptRunner {
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
 
-            console.updateStatus("Loading Grails " + settings.getGrailsVersion());
+            console.updateStatus("Loading Grails " + settings.getGrailsVersion() + " *SPECIAL EDITION*");
             settings.loadConfig();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode",

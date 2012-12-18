@@ -110,12 +110,15 @@ task pluginsFromRepo {
     ]
 
     ext.dir = file("$buildDir/pluginsFromRepo")
-    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
+    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") || it.name.endsWith(".pom") } }
     doFirst {
         ant {
             mkdir(dir: dir)
             plugins.each { name, version ->
-                get(src: "http://repo.grails.org/grails/plugins/org/grails/plugins/${name}/$version/${name}-${version}.zip",
+                def versionTag = version.replaceAll(/\./, '_').toUpperCase()
+                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
+                    dest: dir, verbose: true, usetimestamp: true)
+                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.pom",
                     dest: dir, verbose: true, usetimestamp: true)
             }
         }
@@ -136,8 +139,8 @@ task installResources(type: Copy) {
         filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
         filter(ReplaceTokens, tokens: ['windows.starter.classpath': "%GRAILS_HOME%\\lib\\org.codehaus.groovy\\groovy-all\\jars\\groovy-all-${groovyVersion}.jar;%GRAILS_HOME%\\dist\\grails-bootstrap-${grailsVersion}.jar".toString()])
         filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
-        filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify  -Dspringloaded.synchronize=true -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
-        filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:%GRAILS_HOME:\\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify  -Dspringloaded.synchronize=true -Dspringloaded=%SPRINGLOADED_PARAMS%".toString()])
+        filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/org.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify  -Dspringloaded.synchronize=true -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
+        filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:%GRAILS_HOME:\\=/%/lib/org.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify  -Dspringloaded.synchronize=true -Dspringloaded=%SPRINGLOADED_PARAMS%".toString()])
         filter(ReplaceTokens, tokens: ['startup.command': ''])
         fileMode = 0755
     }
@@ -229,8 +232,8 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
             filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
             filter(ReplaceTokens, tokens: ['windows.starter.classpath': "%GRAILS_HOME%\\lib\\org.codehaus.groovy\\groovy-all\\jars\\groovy-all-${groovyVersion}.jar;%GRAILS_HOME%\\dist\\grails-bootstrap-${grailsVersion}.jar".toString()])
             filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
-            filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
-            filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:%GRAILS_HOME:\\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%".toString()])
+            filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/org.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
+            filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:%GRAILS_HOME:\\=/%/lib/org.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%".toString()])
             filter(ReplaceTokens, tokens: ['startup.command': ''])
             fileMode = 0755
         }
